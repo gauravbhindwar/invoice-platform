@@ -1,0 +1,14 @@
+{
+  "name": "@invoice/common",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.0"
+  },
+  "peerDependencies": {
+    "mongoose": "^8.5.0"
+  }
+}

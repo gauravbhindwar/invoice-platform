@@ -1,0 +1,52 @@
+# Traefik configuration for Invoice Platform
+# Static configuration
+
+# API and Dashboard
+api:
+  dashboard: true
+  insecure: true  # Only for development
+
+# Entry points
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+  traefik:
+    address: ":8080"
+
+# Certificate resolvers (for production HTTPS)
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: your-email@example.com
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web
+
+# Providers
+providers:
+  docker:
+    exposedByDefault: false
+    network: invoice-platform
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+# Logging
+log:
+  level: INFO
+  filePath: "/var/log/traefik.log"
+
+accessLog:
+  filePath: "/var/log/access.log"
+
+# Metrics (optional)
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+
+# Global HTTP to HTTPS redirect (for production)
+# serversTransport:
+#   insecureSkipVerify: true

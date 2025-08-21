@@ -1,0 +1,184 @@
+# Traefik dynamic configuration
+# This file defines the routing rules and middleware
+
+http:
+  # Routers
+  routers:
+    # API Gateway - Main entry point
+    api-gateway:
+      rule: "PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/health`) || PathPrefix(`/services`)"
+      service: api-gateway
+      priority: 100
+      middlewares:
+        - cors-headers
+        - rate-limit
+
+    # Frontend routes (if you have a frontend)
+    frontend:
+      rule: "PathPrefix(`/`)"
+      service: frontend
+      priority: 1
+
+    # Direct service access (for development)
+    auth-direct:
+      rule: "Host(`auth.localhost`) || PathPrefix(`/auth-direct`)"
+      service: auth-service
+      middlewares:
+        - cors-headers
+
+    invoices-direct:
+      rule: "Host(`invoices.localhost`) || PathPrefix(`/invoices-direct`)"
+      service: invoices-service
+      middlewares:
+        - cors-headers
+        - auth-middleware
+
+  # Services
+  services:
+    api-gateway:
+      loadBalancer:
+        servers:
+          - url: "http://api-gateway:3000"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+          timeout: "5s"
+
+    auth-service:
+      loadBalancer:
+        servers:
+          - url: "http://auth-service:3001"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    invoices-service:
+      loadBalancer:
+        servers:
+          - url: "http://invoices-service:3002"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    customers-service:
+      loadBalancer:
+        servers:
+          - url: "http://customers-service:3003"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    expenses-service:
+      loadBalancer:
+        servers:
+          - url: "http://expenses-service:3004"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    inventory-service:
+      loadBalancer:
+        servers:
+          - url: "http://inventory-service:3005"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    dashboard-service:
+      loadBalancer:
+        servers:
+          - url: "http://dashboard-service:3006"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    uploads-service:
+      loadBalancer:
+        servers:
+          - url: "http://uploads-service:3007"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    tax-service:
+      loadBalancer:
+        servers:
+          - url: "http://tax-service:3008"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    ai-service:
+      loadBalancer:
+        servers:
+          - url: "http://ai-service:3009"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://frontend:3000"
+
+  # Middleware
+  middlewares:
+    # CORS headers
+    cors-headers:
+      headers:
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders: "Content-Type,Authorization,X-Requested-With,X-API-Key"
+        accessControlAllowMethods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        accessControlAllowOriginList: 
+          - "http://localhost:3000"
+          - "http://localhost:5173"
+          - "http://localhost:8080"
+        accessControlMaxAge: 86400
+
+    # Rate limiting
+    rate-limit:
+      rateLimit:
+        burst: 100
+        average: 50
+        period: "1m"
+
+    # Authentication middleware (basic implementation)
+    auth-middleware:
+      forwardAuth:
+        address: "http://auth-service:3001/api/verify"
+        authResponseHeaders:
+          - "X-User-ID"
+          - "X-User-Email"
+
+    # Request/Response transformation
+    api-prefix-strip:
+      stripPrefix:
+        prefixes:
+          - "/api"
+
+    # Security headers
+    security-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+
+# TCP routers (if needed for databases, etc.)
+tcp:
+  routers:
+    mongo-router:
+      rule: "HostSNI(`mongo.localhost`)"
+      service: mongo-service
+      tls:
+        passthrough: true
+
+  services:
+    mongo-service:
+      loadBalancer:
+        servers:
+          - address: "mongo:27017"

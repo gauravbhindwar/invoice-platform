@@ -1,0 +1,32 @@
+{
+  "name": "invoice-platform",
+  "private": true,
+  "workspaces": ["packages/*", "services/*"],
+  "devDependencies": { 
+    "npm-run-all": "^4.1.5", 
+    "dotenv-cli": "^7.1.0" 
+  },
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:*",
+    "bootstrap": "npm install --workspaces --no-audit --no-fund",
+    "add": "node ./scripts/add-workspace-dep.js",
+    "create-service": "npx @invoice/service-framework service-gen create",
+    "dev:api-gateway": "dotenv -e ./.env -- npm --prefix services/api-gateway run dev",
+    "dev:auth": "dotenv -e ./.env -- npm --prefix services/auth-service run dev",
+    "dev:invoices": "dotenv -e ./.env -- npm --prefix services/invoices-service run dev",
+    "dev:expenses": "dotenv -e ./.env -- npm --prefix services/expenses-service run dev",
+    "dev:customers": "dotenv -e ./.env -- npm --prefix services/customers-service run dev",
+    "dev:inventory": "dotenv -e ./.env -- npm --prefix services/inventory-service run dev",
+    "dev:uploads": "dotenv -e ./.env -- npm --prefix services/uploads-service run dev",
+    "dev:dashboard": "dotenv -e ./.env -- npm --prefix services/dashboard-service run dev",
+    "dev:tax": "dotenv -e ./.env -- npm --prefix services/tax-service run dev",
+    "dev:ai": "dotenv -e ./.env -- npm --prefix services/ai-service run dev",
+    "dev:compose": "docker compose up --build",
+    "start:prod": "docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build",
+    "stop:prod": "docker compose -f docker-compose.yml -f docker-compose.override.yml down",
+    "start:local": "npm-run-all --parallel start:*",
+    "mongo:dump": "node ./scripts/mongo-dump.js",
+    "mongo:restore": "node ./scripts/mongo-restore.js",
+    "mongo:inspect": "node ./scripts/mongo-inspect.js"
+  }
+}

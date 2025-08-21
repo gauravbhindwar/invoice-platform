@@ -1,0 +1,10 @@
+node_modules
+.git
+*.log
+.env
+services/*/node_modules
+packages/*/node_modules
+
+#remove the .sh file and  yml file
+*.sh
+*.yml

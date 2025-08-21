@@ -1,0 +1,215 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    expose:
+      - "3000"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3000
+    depends_on:
+      - auth
+      - invoices
+      - customers
+      - inventory
+      - tax
+      - uploads
+      - ai
+      - expenses
+      - dashboard
+    networks:
+      - backend
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    # do not publish service port to host; Traefik will route to this container
+    expose:
+      - "3001"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3001
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  invoices:
+    build:
+      context: .
+      dockerfile: services/invoices-service/Dockerfile
+    expose:
+      - "3002"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3002
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - backend
+    
+  # separate Mongo instance for development so prod and dev can run side-by-side
+  mongo-dev:
+    image: mongo:6.0
+    ports:
+      # map host 27018 to the container's 27017 so both Mongo instances can run
+      - "27018:27017"
+    volumes:
+      - mongo-data-dev:/data/db
+    networks:
+      - backend
+
+  # one-off initializer for the dev Mongo instance (creates the dev DB if missing)
+  mongo-init-dev:
+    image: mongo:6.0
+    env_file:
+      - ./.env
+    depends_on:
+      - mongo-dev
+    # Connect directly using the MONGO_URI_DEV and insert an idempotent document
+    volumes:
+      - ./scripts/mongo-init-dev.sh:/scripts/mongo-init-dev.sh:ro
+    command: ["sh", "/scripts/mongo-init-dev.sh"]
+    restart: "no"
+    networks:
+      - backend
+
+  # one-off initializer to ensure a development DB exists (runs and exits)
+  mongo-init:
+    image: mongo:6.0
+    env_file:
+      - ./.env
+    depends_on:
+      - mongo
+    # create the dev DB (uses MONGO_DB_DEV from .env or fallback)
+    command: ["sh", "-c", "sleep 5; mongosh --quiet --eval \"db.getSiblingDB('${MONGO_DB_DEV:-invoice-platform-dev}').createCollection('_init')\"; echo 'mongo-init: created ${MONGO_DB_DEV:-invoice-platform-dev}'"]
+    restart: "no"
+    networks:
+      - backend
+
+  customers:
+    build:
+      context: .
+      dockerfile: services/customers-service/Dockerfile
+    expose:
+      - "3003"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3003
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  inventory:
+    build:
+      context: .
+      dockerfile: services/inventory-service/Dockerfile
+    expose:
+      - "3004"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3004
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  tax:
+    build:
+      context: .
+      dockerfile: services/tax-service/Dockerfile
+    expose:
+      - "3005"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3005
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  uploads:
+    build:
+      context: .
+      dockerfile: services/uploads-service/Dockerfile
+    expose:
+      - "3006"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3006
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  ai:
+    build:
+      context: .
+      dockerfile: services/ai-service/Dockerfile
+    expose:
+      - "3007"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3007
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  expenses:
+    build:
+      context: .
+      dockerfile: services/expenses-service/Dockerfile
+    expose:
+      - "3008"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3008
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: services/dashboard-service/Dockerfile
+    expose:
+      - "3009"
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3009
+    depends_on:
+      - mongo
+    networks:
+      - backend
+
+volumes:
+  mongo-data:
+  mongo-data-dev:
+
+networks:
+  backend:
+    driver: bridge

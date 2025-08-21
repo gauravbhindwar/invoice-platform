@@ -1,0 +1,20 @@
+{
+  "name": "auth-service",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon --quiet src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@invoice/common": "file:../../packages/common",
+    "@invoice/service-framework": "file:../../packages/service-framework",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

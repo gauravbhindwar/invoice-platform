@@ -1,0 +1,31 @@
+steps:
+  # Build the service using the unified Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'Dockerfile.service'
+      - '--build-arg'
+      - 'SERVICE_NAME=${_SERVICE_NAME}'
+      - '--build-arg'
+      - 'SERVICE_PORT=${_SERVICE_PORT}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Push the image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest']
+
+substitutions:
+  _SERVICE_NAME: 'unknown-service'
+  _SERVICE_PORT: '3000'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'

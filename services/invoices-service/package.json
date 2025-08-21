@@ -1,0 +1,17 @@
+{
+  "name": "invoices-service",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon --quiet src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@invoice/common": "file:../../packages/common",
+    "@invoice/service-framework": "file:../../packages/service-framework"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

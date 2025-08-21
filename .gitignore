@@ -1,0 +1,37 @@
+# Node modules
+node_modules/
+services/*/node_modules/
+packages/*/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env files
+.env
+services/*/.env
+packages/*/.env
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+*.local.yml
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# IDE configs
+.vscode/
+.idea/
+*.swp
+
+# Root directory files
+/*.sh
+/*.tml
+/*.md
+

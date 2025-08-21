@@ -1,0 +1,36 @@
+# Base Node.js image for Invoice Platform services
+FROM node:20-alpine
+WORKDIR /app
+
+ARG SERVICE_NAME
+ARG SERVICE_PORT=3000
+
+# Install system dependencies
+RUN apk add --no-cache dumb-init
+
+# Copy entire project (will be mounted as volume in dev)
+COPY . /app/
+
+# Install dependencies for packages and services
+RUN cd packages/service-framework && npm install
+RUN cd packages/common && npm install
+
+# Install dependencies for the specific service
+RUN sh -c "cd services/${SERVICE_NAME} && npm install"
+
+# Set service environment
+ENV NODE_ENV=production
+ENV PORT=${SERVICE_PORT}
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeapp -u 1001 && \
+    chown -R nodeapp:nodejs /app
+
+USER nodeapp
+EXPOSE ${SERVICE_PORT}
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "cd services/${SERVICE_NAME} && node src/server.js"]

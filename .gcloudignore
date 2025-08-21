@@ -1,0 +1,16 @@
+# Ignore node modules
+node_modules
+services/*/node_modules
+packages/*/node_modules
+
+# Git
+.git
+.gitignore
+
+# Local env
+.env
+*.log
+
+#remove the .sh file and  yml file
+*.sh
+*.yml
