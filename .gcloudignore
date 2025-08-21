@@ -11,6 +11,5 @@ packages/*/node_modules
 .env
 *.log
 
-#remove the .sh file and  yml file
-*.sh
-*.yml
+# Keep deployment and CI files (cloudbuild.yaml, scripts, Dockerfiles)
+# Do not ignore .sh or .yml globally so Cloud Build can find cloudbuild.yaml

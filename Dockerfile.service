@@ -1,0 +1,42 @@
+# Dockerfile.service - builds a single service from the monorepo
+# Usage: docker build -f Dockerfile.service --build-arg SERVICE_NAME=auth-service --build-arg SERVICE_PORT=3001 .
+
+FROM node:20-alpine AS base
+
+ARG SERVICE_NAME=unknown-service
+ARG SERVICE_PORT=3000
+
+# install minimal deps
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+# copy package manifests first for faster cache
+COPY package.json package-lock.json* ./
+COPY packages ./packages
+COPY services/${SERVICE_NAME} ./services/${SERVICE_NAME}
+
+# install workspace deps
+RUN npm ci --production --no-audit --no-fund || true
+
+# install service-specific deps
+RUN if [ -f "services/${SERVICE_NAME}/package.json" ]; then \
+  cd services/${SERVICE_NAME} && npm ci --production --no-audit --no-fund; \
+  fi
+
+# copy remaining files (if any)
+COPY . .
+
+# create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeapp -u 1001 && \
+    chown -R nodeapp:nodejs /app
+
+USER nodeapp
+
+EXPOSE ${SERVICE_PORT}
+ENV PORT=${SERVICE_PORT}
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "cd services/${SERVICE_NAME} && node src/server.js"]

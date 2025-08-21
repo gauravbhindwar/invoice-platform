@@ -22,9 +22,24 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest']
 
+  # Deploy to Cloud Run (managed)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Deploying ${_SERVICE_NAME} to Cloud Run in region ${_REGION}..."
+        gcloud run deploy "${_SERVICE_NAME}" \
+          --image=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID \
+          --region="${_REGION}" \
+          --platform=managed \
+          --allow-unauthenticated \
+          --set-env-vars "PORT=${_SERVICE_PORT}"
+
 substitutions:
   _SERVICE_NAME: 'unknown-service'
   _SERVICE_PORT: '3000'
+  _REGION: 'asia-south1'
 
 options:
   logging: CLOUD_LOGGING_ONLY

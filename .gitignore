@@ -31,7 +31,7 @@ coverage/
 *.swp
 
 # Root directory files
-/*.sh
+# /*.sh
 /*.tml
 /*.md
 
